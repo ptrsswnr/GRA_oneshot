@@ -3,9 +3,9 @@
 🌐 **Live app:** https://gra-oneshot.web.app
 📋 **ผลทดสอบ:** [`test-results.md`](test-results.md)
 
-> ⚠️ ยังไม่ได้เพิ่ม `https://gra-oneshot.web.app` เข้า Authorized JavaScript origins ของ Google Drive
-> OAuth Client และยังไม่มีคีย์ OpenRouter จริงใน `app/js/ai-config.local.js` — ปุ่ม "เชื่อมต่อ Google
-> Drive" และ AI (FS-02/04/08) จะตกไปใช้ fallback ที่ไม่ใช่ AI จริงจนกว่าจะทำ 2 ข้อนี้เสร็จ (ดูหัวข้อ Infra)
+> ✅ เพิ่ม `https://gra-oneshot.web.app` เข้า Authorized JavaScript origins แล้ว (2026-09-22) — ปุ่ม
+> "เชื่อมต่อ Google Drive" เปิดหน้า Google Sign-in จริงได้แล้ว (ทดสอบยืนยันแล้ว ไม่ขึ้น origin error)
+> ⚠️ ยังไม่มีคีย์ OpenRouter จริงใน `app/js/ai-config.local.js` — AI (FS-02/04/08) ยังตกไปใช้ fallback
 
 ## นี่คือโฟลเดอร์อะไร
 
