@@ -1,0 +1,41 @@
+# ─────────────────────────────────────────────────────────────
+# .gitignore — Grant Receipt Assistant (GRA_oneshot)
+# ห้ามคีย์ AI/secret ใด ๆ หลุดเข้า git (บังคับตาม grant-receipt-assistant-spec.md หัวข้อ 9)
+# ─────────────────────────────────────────────────────────────
+
+# ── ชิ้นส่วนที่เครื่องมือติดตั้งให้ (สร้างใหม่ได้เสมอ) ──
+node_modules/
+
+# ── ไฟล์ที่เครื่องแต่ละคนสร้างเอง ──
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+.vscode/
+.idea/
+
+# ── แคชของ Firebase CLI ตอน deploy (สร้างใหม่ได้เสมอ ไม่ใช่ความลับ) ──
+.firebase/
+firebase-debug.*.log
+firestore-debug.log
+ui-debug.log
+
+# ── คีย์ AI (OpenRouter) — ห้าม commit เด็ดขาด ──
+js/ai-config.local.js
+
+# ── Service account key ของ firebase-admin (ถ้ามีสคริปต์ seed แบบ Node) ──
+*serviceAccountKey*.json
+*firebase-adminsdk*.json
+google-credentials*.json
+*.pem
+*.key
+
+# ── ผลรันเทสต์ (Playwright หรืออื่น ๆ) — สร้างใหม่ได้ทุกครั้งที่รัน ──
+test-results/
+playwright-report/
+tests/.fixtures/
+
+# ─────────────────────────────────────────────────────────────
+# ✅ ก่อน push ทุกครั้ง: สั่งให้ Claude "แสดงรายการไฟล์ที่กำลังจะส่งขึ้น git ให้ดู"
+# แล้วเช็คด้วยตาว่าไม่มี node_modules/ หรือไฟล์ที่มีคำว่า key/secret/config หลุดไป
+# ─────────────────────────────────────────────────────────────
