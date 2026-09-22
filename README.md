@@ -1,7 +1,7 @@
 # Grant Receipt Assistant — one-shot rebuild (Module 2, การบ้านที่ 4)
 
 🌐 **Live app:** https://gra-oneshot.web.app
-📋 **ผลทดสอบ:** _(ใส่ลิงก์ `test-results.md` หลังทดสอบเสร็จ)_
+📋 **ผลทดสอบ:** [`test-results.md`](test-results.md)
 
 > ⚠️ ยังไม่ได้เพิ่ม `https://gra-oneshot.web.app` เข้า Authorized JavaScript origins ของ Google Drive
 > OAuth Client และยังไม่มีคีย์ OpenRouter จริงใน `app/js/ai-config.local.js` — ปุ่ม "เชื่อมต่อ Google
