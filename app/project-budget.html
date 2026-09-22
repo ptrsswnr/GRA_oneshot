@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>งบประมาณโครงการ — Grant Receipt Assistant</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/categories.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+<script src="js/firebase-config.js" defer></script>
+<script src="js/nav.js" defer></script>
+<script src="js/auth-guard.js" defer></script>
+<script src="js/ai-config.local.js" defer onerror="console.warn('ai-config.local.js not found — AI budget-estimate reading disabled, use manual entry')"></script>
+<script src="js/receipt-ai.js" defer></script>
+<script type="module" src="js/pdf-to-image.js"></script>
+</head>
+<body>
+
+<div id="nav"></div>
+
+<main class="page-shell">
+
+  <div class="section text-left-block" id="pageIntro">
+    <h1>งบประมาณโครงการ</h1>
+    <p class="text-body">กำลังโหลด...</p>
+  </div>
+
+  <div id="warningBox" class="banner banner--error" style="display:none;"></div>
+
+  <div id="load-state" class="section">
+    <p class="text-body">กำลังโหลดรายการงบประมาณ...</p>
+  </div>
+
+  <div class="section">
+    <div id="noBudgetBanner" class="banner banner--warning" style="display:none;">
+      <p class="text-body">
+        <strong>โครงการนี้ยังไม่มีรายการงบประมาณเลย</strong> — ต้องมีอย่างน้อย 1 รายการก่อนจึงจะ
+        อัปโหลดใบเสร็จเข้าโครงการนี้ได้ (Rule Engine ชั้นที่ 2 ใช้ตัวเลขนี้เทียบยอดสะสมของแต่ละหมวด)
+      </p>
+    </div>
+    <h3>รายการงบประมาณปัจจุบัน</h3>
+    <div style="overflow-x:auto;">
+      <table class="budget-table">
+        <thead>
+          <tr><th>หมวด</th><th>ประมาณการ</th><th>หน่วย</th><th>หมายเหตุ</th><th></th></tr>
+        </thead>
+        <tbody id="budgetTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="card">
+      <h3>(ก) เพิ่มรายการด้วยมือ</h3>
+      <div class="row" style="align-items:flex-end;">
+        <div class="field" style="flex:1 1 200px;">
+          <label for="newCategoryName">หมวดค่าใช้จ่าย</label>
+          <select id="newCategoryName"></select>
+        </div>
+        <div class="field" style="flex:1 1 140px;">
+          <label for="newEstimatedAmount">จำนวนเงินประมาณการ (บาท)</label>
+          <input type="number" id="newEstimatedAmount" class="input-mono" min="0" step="0.01">
+        </div>
+        <div class="field" style="flex:1 1 100px;">
+          <label for="newUnit">หน่วย (ถ้ามี)</label>
+          <input type="text" id="newUnit">
+        </div>
+        <div class="field" style="flex:1 1 160px;">
+          <label for="newNote">หมายเหตุ</label>
+          <input type="text" id="newNote">
+        </div>
+        <div class="field" style="flex:0 0 auto;">
+          <button type="button" class="btn btn-primary btn-md" id="addBudgetItemButton">เพิ่มรายการ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="card">
+      <h3>(ข) แนบไฟล์ประมาณการ ให้ AI ช่วยเสนอรายการ</h3>
+      <p class="text-small">รองรับไฟล์ .jpg, .png, .pdf — AI แค่เสนอรายการ ต้องตรวจ/แก้ไขค่าในตารางด้านล่างก่อนกดบันทึกเสมอ</p>
+      <div class="row row-align-center">
+        <input type="file" id="budgetAiFile" accept=".jpg,.jpeg,.png,.pdf">
+        <button type="button" class="btn btn-secondary btn-sm" id="budgetAiAnalyzeButton">ให้ AI อ่านและเสนอรายการ</button>
+      </div>
+      <p id="budgetAiStatus" class="text-small" style="margin-top:8px;"></p>
+
+      <div id="aiStagingSection" style="display:none; margin-top:12px;">
+        <div style="overflow-x:auto;">
+          <table class="budget-table">
+            <thead>
+              <tr><th>เลือก</th><th>หมวด</th><th>ประมาณการ</th><th>หน่วย</th><th>หมายเหตุ</th></tr>
+            </thead>
+            <tbody id="aiStagingBody"></tbody>
+          </table>
+        </div>
+        <div class="row" style="justify-content:flex-end; margin-top:8px;">
+          <button type="button" class="btn btn-primary btn-md" id="aiSaveSelectedButton">บันทึกรายการที่เลือกลงงบประมาณ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script src="js/project-budget.js" defer></script>
+
+</body>
+</html>

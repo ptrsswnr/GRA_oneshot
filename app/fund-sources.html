@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>จัดการแหล่งทุน (Admin) — Grant Receipt Assistant</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+<script src="js/firebase-config.js" defer></script>
+<script src="js/nav.js" defer></script>
+<script src="js/auth-guard.js" defer></script>
+</head>
+<body>
+
+<div id="nav"></div>
+
+<main class="page-shell">
+
+  <div class="section text-left-block">
+    <h1>จัดการแหล่งทุน</h1>
+    <p class="text-body">
+      หน้านี้สำหรับผู้ดูแลระบบ (admin) เท่านั้น — แหล่งทุนและกฎที่เพิ่มที่นี่จะไปปรากฏเป็นตัวเลือกตอน
+      นักวิจัยสร้างโครงการ/อัปโหลดใบเสร็จ การกันสิทธิ์จริงอยู่ที่ Firestore Security Rules ไม่ใช่แค่
+      ซ่อนฟอร์มนี้
+    </p>
+  </div>
+
+  <div id="admin-check" class="section">
+    <p class="text-body">กำลังตรวจสอบสิทธิ์...</p>
+  </div>
+
+  <div id="admin-only" style="display:none;">
+    <div class="section">
+      <div class="card">
+        <h3>เพิ่มแหล่งทุนใหม่</h3>
+        <div id="warningBox" class="banner banner--error" style="display:none;"></div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label for="fundSourceName">ชื่อแหล่งทุน</label>
+            <input type="text" id="fundSourceName">
+          </div>
+          <div class="field">
+            <label for="fundSourceCode">รหัสแหล่งทุน</label>
+            <input type="text" id="fundSourceCode" class="input-mono">
+          </div>
+        </div>
+
+        <div class="row" style="justify-content:flex-end;">
+          <button type="button" class="btn btn-primary btn-md" id="addFundSourceButton">เพิ่มแหล่งทุน</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="load-state" class="section">
+      <p class="text-body">กำลังโหลดรายชื่อแหล่งทุน...</p>
+    </div>
+
+    <div id="fund-source-list" class="section" style="display:none;"></div>
+  </div>
+
+</main>
+
+<script src="js/fund-sources.js" defer></script>
+
+</body>
+</html>

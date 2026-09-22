@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grant Receipt Assistant</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+<script src="js/firebase-config.js" defer></script>
+<script src="js/nav.js" defer></script>
+<script src="js/auth-guard.js" defer></script>
+</head>
+<body>
+
+<div id="nav"></div>
+
+<main class="page-shell">
+
+  <div class="section text-left-block">
+    <h1>Grant Receipt Assistant</h1>
+    <p class="text-body">
+      ผู้ช่วยตรวจสอบใบเสร็จ/หลักฐานการเบิกจ่ายเงินทุนวิจัย สำหรับนักวิจัยที่ไม่มีพื้นฐานด้านการเงิน —
+      อัปโหลดใบเสร็จ ระบบตรวจตามกฎของแหล่งทุนให้ทันที (เพดานเงิน + งบประมาณที่โครงการของบไว้ +
+      เอกสารประกอบที่ต้องแนบครบ + เนื้อหาในเอกสารที่แนบ) พร้อมคำอธิบายผลที่เข้าใจง่าย ก่อนส่งเจ้าหน้าที่
+      การเงินตรวจจริง
+    </p>
+    <div class="row" style="margin-top:var(--sp-3);">
+      <a class="btn btn-primary btn-lg" href="projects.html">เริ่มต้น: สร้าง/ดูโครงการของฉัน<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
+      <a class="btn btn-secondary btn-lg" href="receipts.html">ดูใบเสร็จของฉัน</a>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>ขั้นตอนการใช้งาน</h3>
+    <div class="grid-3">
+      <a class="card" href="projects.html" style="text-decoration:none;">
+        <h4>1. สร้างโครงการ + งบประมาณ</h4>
+        <p class="text-small">สร้างโครงการ ผูกแหล่งทุน แล้วกรอกรายการประมาณการค่าใช้จ่าย (งบประมาณ) ของโครงการนั้นไว้ก่อน</p>
+      </a>
+      <a class="card" href="new-receipt.html" style="text-decoration:none;">
+        <h4>2. อัปโหลดใบเสร็จ</h4>
+        <p class="text-small">แนบไฟล์หลักฐาน ให้ AI ช่วยอ่านข้อมูล/เดาชนิดเอกสาร แล้วตรวจ/แก้ไขก่อนส่งตรวจ</p>
+      </a>
+      <a class="card" href="receipts.html" style="text-decoration:none;">
+        <h4>3. ดูผลตรวจ</h4>
+        <p class="text-small">Rule Engine ตรวจ 4 ชั้น (เพดานแหล่งทุน/งบโครงการ/เอกสารครบ/เนื้อหาเอกสาร) แล้วอธิบายผลให้เข้าใจง่าย</p>
+      </a>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>สถานะของใบเสร็จมี 3 ค่า</h3>
+    <div class="card">
+      <p class="text-body">
+        <span class="chip-status chip-status--pass">ผ่าน</span> ·
+        <span class="chip-status chip-status--fix">ต้องแก้ไข</span> ·
+        <span class="chip-status chip-status--reject">ไม่เข้าเงื่อนไข</span>
+      </p>
+      <p class="text-small">
+        ใบเสร็จแต่ละรายการจะได้หนึ่งในสามสถานะนี้ทันทีที่ส่งตรวจ (ตัดสินครั้งเดียว ไม่แก้ทีหลัง) พร้อม
+        คำอธิบายเหตุผลประกอบทุกครั้ง — สถานะตัดสินโดยโค้ด (Rule Engine) ล้วนๆ ไม่ใช่ AI: <strong>ผ่าน</strong>
+        คือไม่เกินเพดาน/งบที่ของบไว้และมีเอกสาร/ข้อมูลครบ, <strong>ต้องแก้ไข</strong> คือเกินเพดาน/งบ
+        หรือเอกสาร/ข้อมูลยังไม่ครบ, <strong>ไม่เข้าเงื่อนไข</strong> คือหมวดนี้ไม่มีกฎรองรับหรือโครงการ
+        ไม่ได้ของบหมวดนี้ไว้เลย
+      </p>
+    </div>
+  </div>
+
+</main>
+
+</body>
+</html>

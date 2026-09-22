@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>อัปโหลดใบเสร็จใหม่ — Grant Receipt Assistant</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="js/categories.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+<script src="js/firebase-config.js" defer></script>
+<script src="js/nav.js" defer></script>
+<script src="js/auth-guard.js" defer></script>
+<script src="https://accounts.google.com/gsi/client" defer></script>
+<script src="js/google-drive.js" defer></script>
+<script src="js/ai-config.local.js" defer onerror="console.warn('ai-config.local.js not found — AI steps fall back to manual/demo data (see js/ai-config.example.js)')"></script>
+<script src="js/receipt-ai.js" defer></script>
+<script src="js/rule-engine.js" defer></script>
+<script src="js/ai-explain.js" defer></script>
+<script type="module" src="js/pdf-to-image.js"></script>
+</head>
+<body>
+
+<div id="nav"></div>
+
+<main class="page-shell">
+
+  <div class="stepper" aria-label="ขั้นตอนการอัปโหลดใบเสร็จ">
+    <div class="stepper__step is-current" id="stepDot1"><div class="stepper__dot">1</div><div class="stepper__label">อัปโหลดใบเสร็จ</div></div>
+    <div class="stepper__step" id="stepDot2"><div class="stepper__dot">2</div><div class="stepper__label">ตรวจสอบข้อมูล</div></div>
+    <div class="stepper__step" id="stepDot3"><div class="stepper__dot">3</div><div class="stepper__label">ผลตรวจ</div></div>
+  </div>
+
+  <div id="warningBox" class="banner banner--error" style="display:none;"></div>
+
+  <!-- ขั้นตอนที่ 1: อัปโหลด -->
+  <section id="step1">
+    <div class="section text-left-block">
+      <h1>อัปโหลดใบเสร็จ</h1>
+      <p class="text-body">
+        เลือกโครงการวิจัยที่ใบเสร็จนี้ผูกอยู่ (ต้องกรอกงบประมาณของโครงการไว้ก่อนแล้ว — ดูหน้า
+        "งบประมาณโครงการ") แล้วแนบไฟล์หลักฐาน — AI จะช่วยอ่านข้อมูลเบื้องต้นให้ในขั้นตอนถัดไป
+      </p>
+    </div>
+
+    <div class="section" style="max-width:640px;">
+      <div class="field">
+        <label for="projectId">โครงการวิจัย</label>
+        <select id="projectId">
+          <option value="">— เลือกโครงการวิจัย —</option>
+        </select>
+        <p class="help-text">ยังไม่มีโครงการที่ต้องการ? ไปสร้างที่หน้า <a href="projects.html">โครงการของฉัน</a> ก่อน</p>
+      </div>
+
+      <div id="noBudgetWarning" class="banner banner--warning" style="display:none;"></div>
+
+      <div class="field">
+        <label>ไฟล์หลักฐาน (jpg/png/pdf — สูงสุด 5 ไฟล์, 5 MB/ไฟล์)</label>
+        <label class="dropzone" for="receiptFiles" tabindex="0">
+          <input class="dropzone__input" type="file" id="receiptFiles" accept=".jpg,.jpeg,.png,.pdf" multiple>
+          <div class="dropzone__icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 18a4.5 4.5 0 0 0 0-9 6 6 0 0 0-11.6-1.7A4 4 0 0 0 6.5 15"></path><polyline points="12 12 12 21"></polyline><polyline points="8.5 15.5 12 12 15.5 15.5"></polyline></svg></div>
+          <h4 style="margin:0;">ลากไฟล์มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</h4>
+          <p class="text-body" style="margin:0;text-align:center;">รองรับไฟล์ชนิด .jpg, .png และ .pdf เท่านั้น</p>
+        </label>
+        <div id="fileStatus" class="text-small" style="margin-top:8px;"></div>
+        <div class="row row-align-center" style="gap:8px;margin-top:8px;">
+          <button type="button" class="btn btn-secondary btn-sm" id="connectDriveButton">เชื่อมต่อ Google Drive</button>
+          <span id="driveConnectStatus" class="text-small"></span>
+        </div>
+        <p class="help-text">ไฟล์ที่แนบจะถูกอัปโหลดไปเก็บที่ Google Drive ของคุณ (ต้องกดเชื่อมต่อก่อนถ้าจะแนบไฟล์จริง)</p>
+      </div>
+
+      <div class="card" id="privacyConsentCard" style="display:none;">
+        <label class="row row-align-center" style="gap:8px; cursor:pointer;">
+          <input type="checkbox" id="privacyConsentCheckbox" style="width:auto; flex:0 0 auto;">
+          <span class="text-small">
+            ฉันรับทราบว่าข้อมูลใบเสร็จที่อัปโหลด (ยอดเงิน วันที่ หมวดค่าใช้จ่าย ผู้ขาย และไฟล์แนบ) จะถูกผู้ดูแลระบบ (Admin)
+            เห็นได้เต็มรูปแบบผ่าน Admin Dashboard และอาจถูกนำไปใช้จัดทำรายงานสรุปและปรับปรุงระบบ
+          </span>
+        </label>
+      </div>
+
+      <div class="row" style="justify-content:flex-end;">
+        <button type="button" class="btn btn-primary btn-md" id="step1Button">อัปโหลดและอ่านข้อมูลด้วย AI</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ขั้นตอนที่ 2: ตรวจสอบข้อมูลจาก AI + ต่อไฟล์: ประเภทเอกสาร + FS-08 -->
+  <section id="step2" hidden>
+    <div class="section text-left-block">
+      <h1>ตรวจสอบและแก้ไขข้อมูล</h1>
+      <p class="text-body">
+        ตรวจสอบ/แก้ไขข้อมูลที่ AI อ่านมาให้ถูกต้อง แล้วระบุประเภทเอกสารของแต่ละไฟล์ที่แนบ (ถ้าหมวดนี้
+        มีชุดเอกสารประกอบกำหนดไว้) และยืนยันข้อมูลที่ดึงจากเอกสารก่อนส่งเข้าตรวจกับ Rule Engine
+      </p>
+    </div>
+
+    <div id="aiProcessing" class="section">
+      <div class="card">
+        <p class="text-body">🤖 กำลังอ่านข้อมูลด้วย AI...</p>
+      </div>
+    </div>
+
+    <div id="reviewForm" hidden>
+      <div class="row" style="align-items:flex-start;">
+        <div class="card" style="flex:0 0 220px;">
+          <div class="dropzone__icon" style="width:100%; height:160px; border:1px solid var(--color-divider); border-radius:var(--radius-sm);"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H7a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7.5z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8.5" y1="13" x2="15.5" y2="13"></line><line x1="8.5" y1="17" x2="13" y2="17"></line></svg></div>
+          <p class="text-small" id="fileNameDisplay" style="margin-top:12px;"></p>
+          <span class="chip-status chip-status--pending">รอตรวจสอบ</span>
+          <div id="aiSuggestionLabel" class="chip-status chip-status--pass" style="display:none; margin-top:8px;">🤖 AI suggestion — โปรดตรวจสอบก่อนบันทึก</div>
+        </div>
+
+        <div class="card" style="flex:1 1 400px;">
+          <div class="field">
+            <label for="amount">ยอดเงิน (บาท)</label>
+            <input type="number" id="amount" class="input-mono" min="0" step="0.01">
+            <p class="help-text">อ่านโดย AI — ตรวจสอบตัวเลขให้ตรงกับใบเสร็จจริงก่อนส่งตรวจ</p>
+          </div>
+          <div class="field">
+            <label for="date">วันที่บนใบเสร็จ</label>
+            <input type="date" id="date">
+          </div>
+          <div class="field">
+            <label for="category">หมวดค่าใช้จ่าย</label>
+            <select id="category"></select>
+            <p class="help-text">แก้ไขหมวดได้หากระบบจัดหมวดผิด — Rule Engine จะใช้ค่านี้เป็นหลักในการตรวจ</p>
+          </div>
+          <div class="field">
+            <label for="vendorName">ชื่อร้าน/ผู้ขาย</label>
+            <input type="text" id="vendorName">
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>ประเภทเอกสารต่อไฟล์แนบ + ข้อมูลในเอกสาร (FS-08)</h3>
+        <div id="fileCardsContainer"></div>
+      </div>
+
+      <div class="row" style="justify-content:flex-end; margin-top:8px;">
+        <button type="button" class="btn btn-secondary btn-md" id="backToStep1Button">ย้อนกลับไปอัปโหลดใหม่</button>
+        <button type="button" class="btn btn-primary btn-md" id="step2Button" disabled>ส่งเข้าตรวจกับ Rule Engine</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ขั้นตอนที่ 3: ผลตรวจ -->
+  <section id="step3" hidden>
+    <div class="section text-left-block">
+      <h1>ผลตรวจใบเสร็จ</h1>
+      <p class="text-body">Rule Engine (โค้ดล้วนๆ) เป็นผู้ตัดสินผล คำอธิบายด้านล่างเป็นภาษาที่เข้าใจง่าย ไม่ใช่ศัพท์บัญชี</p>
+    </div>
+
+    <div id="checkResult" class="section"></div>
+
+    <div class="row" style="justify-content:flex-end;">
+      <button type="button" class="btn btn-secondary btn-md" id="uploadAgainButton">อัปโหลดใบเสร็จใหม่</button>
+      <a class="btn btn-primary btn-md" href="receipts.html">ไปที่ใบเสร็จของฉัน</a>
+    </div>
+  </section>
+
+</main>
+
+<script src="js/new-receipt.js" defer></script>
+
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>โครงการของฉัน — Grant Receipt Assistant</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+<script src="js/firebase-config.js" defer></script>
+<script src="js/nav.js" defer></script>
+<script src="js/auth-guard.js" defer></script>
+</head>
+<body>
+
+<div id="nav"></div>
+
+<main class="page-shell">
+
+  <div class="section text-left-block">
+    <h1>โครงการของฉัน</h1>
+    <p class="text-body">
+      สร้างโครงการวิจัยของตัวเองไว้ผูกกับแหล่งทุน แล้วกรอกงบประมาณ (ประมาณการค่าใช้จ่าย) ของโครงการก่อน
+      จึงจะอัปโหลดใบเสร็จเข้าโครงการนั้นได้ (ดูหน้า "งบประมาณโครงการ" ในแต่ละการ์ด) — รายการแหล่งทุน
+      ด้านล่างเป็นข้อมูลกลางที่ผู้ดูแลระบบ (admin) เป็นคนเพิ่มเข้ามาเท่านั้น
+    </p>
+  </div>
+
+  <div class="section">
+    <div class="card">
+      <h3>เพิ่มโครงการใหม่</h3>
+      <div id="warningBox" class="banner banner--error" style="display:none;"></div>
+
+      <div class="field">
+        <label for="projectName">ชื่อโครงการวิจัย</label>
+        <input type="text" id="projectName">
+      </div>
+      <div class="field">
+        <label for="fundSourceId">แหล่งทุน</label>
+        <select id="fundSourceId"></select>
+      </div>
+
+      <div class="row" style="justify-content:flex-end;">
+        <button type="button" class="btn btn-primary btn-md" id="addProjectButton">เพิ่มโครงการ</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="load-state" class="section">
+    <p class="text-body">กำลังโหลดโครงการของคุณ...</p>
+  </div>
+
+  <div id="project-list" class="section" style="display:none;"></div>
+
+</main>
+
+<script src="js/projects.js" defer></script>
+
+</body>
+</html>

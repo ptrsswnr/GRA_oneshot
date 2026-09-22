@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ใส่ตัวอย่างงบประมาณโครงการ (budgetItems) · Grant Receipt Assistant</title>
+  <!-- style.css เป็นของ app-builder (ยังอาจไม่มีตอนรันหน้านี้ครั้งแรก) — หน้านี้จึงมี style ขั้นต่ำของ
+       ตัวเองไว้ด้วย เพื่อให้ยังอ่านออกแม้ยังไม่มีไฟล์ CSS หลัก -->
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .seed-shell { max-width: 820px; margin: 0 auto; padding: 24px 16px; line-height: 1.7; }
+    .seed-shell h1 { font-size: 1.5rem; }
+    .seed-shell pre { white-space: pre-wrap; word-break: break-word; }
+    .seed-shell .seed-box { border: 1px solid #ccc; border-radius: 8px; padding: 16px; margin-top: 16px; }
+    .seed-shell label { display: block; margin-bottom: 6px; font-weight: 600; }
+    .seed-shell select, .seed-shell button { font: inherit; padding: 8px 12px; }
+    .seed-shell .seed-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+  </style>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+  <script src="js/firebase-config.js" defer></script>
+</head>
+<body>
+  <div class="page-shell seed-shell">
+    <div class="section text-left-block">
+      <h1>🌱 ใส่ตัวอย่างงบประมาณโครงการ (budgetItems)</h1>
+      <p class="text-body">
+        หน้านี้ใช้ครั้งเดียวตอนตั้งค่า/ทดสอบระบบ — ใส่รายการประมาณการค่าใช้จ่ายตัวอย่าง
+        <strong>2 รายการ</strong> ลงใน <code>users/{uid}/projects/{projectId}/budgetItems</code>
+        ของ<strong>โครงการที่คุณเป็นเจ้าของเอง</strong> (ตามสเปกหัวข้อ 3 และ FS-01b)
+      </p>
+      <p class="text-body">
+        ข้อมูลอ้างอิงกลาง (<code>fundSources</code> / <code>ruleVersions</code> / <code>ruleItems</code> /
+        <code>documentTypes</code> / <code>evidenceChains</code>) <strong>มีอยู่แล้วใน Firestore</strong>
+        จากระบบเดิมซึ่งใช้ฐานข้อมูลเดียวกัน — หน้านี้จึง<strong>ไม่</strong>เขียนทับข้อมูลชุดนั้น
+        เขียนเฉพาะ <code>budgetItems</code> ซึ่งเป็นของใหม่เท่านั้น
+      </p>
+      <p class="text-body">
+        <strong>หมายเหตุสิทธิ์:</strong> <code>budgetItems</code> เขียนได้เฉพาะ<strong>เจ้าของโครงการ</strong>
+        (แม้เป็น admin ก็เขียนของคนอื่นไม่ได้ — ดู <code>firestore.rules</code>) หน้านี้จึงใส่ข้อมูลลง
+        โครงการของบัญชีที่ล็อกอินอยู่ตอนนี้เท่านั้น กดซ้ำได้ ไม่เกิดข้อมูลซ้ำ (ใช้ doc id เดิมทุกครั้ง)
+      </p>
+    </div>
+
+    <div class="card seed-box">
+      <div id="signInNotice" class="text-body">กำลังตรวจสอบสถานะการล็อกอิน…</div>
+
+      <div id="seedForm" hidden>
+        <div class="seed-row">
+          <div>
+            <label for="projectSelect">เลือกโครงการที่จะใส่ตัวอย่างงบประมาณ</label>
+            <select id="projectSelect"></select>
+          </div>
+          <button type="button" class="btn btn-primary btn-md" id="seedBudgetItemsButton">
+            ใส่ตัวอย่างงบประมาณ 2 รายการ
+          </button>
+        </div>
+      </div>
+
+      <pre id="seedResult">ยังไม่ได้กดใส่ข้อมูล</pre>
+    </div>
+  </div>
+
+  <script src="js/seed-budget-items.js" defer></script>
+</body>
+</html>

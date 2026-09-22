@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Dashboard — Grant Receipt Assistant</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+<script src="js/firebase-config.js" defer></script>
+<script src="js/nav.js" defer></script>
+<script src="js/auth-guard.js" defer></script>
+</head>
+<body>
+
+<div id="nav"></div>
+
+<main class="page-shell">
+
+  <div class="section text-left-block">
+    <h1>Admin Dashboard</h1>
+    <p class="text-body">
+      หน้านี้สำหรับผู้ดูแลระบบ (admin) เท่านั้น — แสดงใบเสร็จของนักวิจัย<strong>ทุกคน</strong>ในระบบ
+      (ไม่ใช่แค่ของ admin เอง) สำหรับใช้เป็นข้อมูลรายงานผู้บริหารและแนวทางปรับปรุงระบบ — สิทธิ์เป็น
+      "อ่านอย่างเดียว" เท่านั้น
+    </p>
+  </div>
+
+  <div id="admin-check" class="section">
+    <p class="text-body">กำลังตรวจสอบสิทธิ์...</p>
+  </div>
+
+  <div id="admin-only" style="display:none;">
+
+    <div id="load-state" class="section">
+      <p class="text-body">กำลังโหลดข้อมูลใบเสร็จทั้งหมด...</p>
+    </div>
+
+    <div id="dashboard-content" style="display:none;">
+
+      <div class="section">
+        <div class="grid-3">
+          <div class="stat-tile">
+            <div class="stat-tile__value" id="statTotalReceipts">-</div>
+            <div class="stat-tile__label">ใบเสร็จทั้งหมด</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-tile__value" id="statTotalAmount">-</div>
+            <div class="stat-tile__label">ยอดเงินรวม (บาท)</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-tile__value" id="statResearchers">-</div>
+            <div class="stat-tile__label">นักวิจัย / โครงการที่มีใบเสร็จ</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="grid-3">
+          <div class="stat-tile">
+            <div class="stat-tile__value stat-tile__value--pass" id="statPass">-</div>
+            <div class="stat-tile__label">ผ่าน</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-tile__value stat-tile__value--fix" id="statFix">-</div>
+            <div class="stat-tile__label">ต้องแก้ไข</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-tile__value stat-tile__value--reject" id="statReject">-</div>
+            <div class="stat-tile__label">ไม่เข้าเงื่อนไข</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>แยกตามสถานะ</h3>
+        <div class="card" id="statusBreakdown"></div>
+      </div>
+
+      <div class="section">
+        <h3>แยกตามหมวดค่าใช้จ่าย</h3>
+        <div class="card" id="categoryBreakdown"></div>
+      </div>
+
+      <div class="section">
+        <h3>แยกตามแหล่งทุน</h3>
+        <div class="card" id="fundSourceBreakdown"></div>
+      </div>
+
+      <div class="section">
+        <h3>รายละเอียดใบเสร็จทั้งหมด</h3>
+        <p class="text-small">เรียงจากล่าสุดไปเก่าสุด — ระบุชื่อ/อีเมลผู้ใช้ที่อัปโหลดแต่ละใบเสร็จ</p>
+        <div style="overflow-x:auto;">
+          <table class="admin-table" id="receiptTable">
+            <thead>
+              <tr>
+                <th>วันที่อัปโหลด</th>
+                <th>นักวิจัย</th>
+                <th>โครงการ</th>
+                <th>แหล่งทุน</th>
+                <th>หมวด</th>
+                <th>ผู้ขาย</th>
+                <th>ยอดเงิน</th>
+                <th>สถานะ</th>
+                <th>ไฟล์แนบ</th>
+                <th>คำอธิบาย</th>
+              </tr>
+            </thead>
+            <tbody id="receiptTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<script src="js/admin-dashboard.js" defer></script>
+
+</body>
+</html>

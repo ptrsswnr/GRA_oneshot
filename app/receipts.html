@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ใบเสร็จของฉัน — Grant Receipt Assistant</title>
+<link rel="stylesheet" href="css/style.css">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+<script src="js/firebase-config.js" defer></script>
+<script src="js/nav.js" defer></script>
+<script src="js/auth-guard.js" defer></script>
+</head>
+<body>
+
+<div id="nav"></div>
+
+<main class="page-shell">
+
+  <div class="section text-left-block" id="pageIntro">
+    <h1>ใบเสร็จของฉัน</h1>
+    <p class="text-body">
+      ใบเสร็จของคุณทุกโครงการ เรียงจากอัปโหลดล่าสุดก่อน — ถ้ายังไม่มีข้อมูล ให้ไปที่หน้า
+      <a href="projects.html">โครงการของฉัน</a> เพื่อสร้างโครงการ+งบประมาณก่อน แล้วอัปโหลดใบเสร็จที่หน้า
+      <a href="new-receipt.html">อัปโหลดใบเสร็จใหม่</a>
+    </p>
+  </div>
+
+  <div id="load-state" class="section">
+    <p class="text-body">กำลังโหลดข้อมูลจาก Firestore...</p>
+  </div>
+
+  <div id="receipt-list" class="section" style="display:none;"></div>
+
+</main>
+
+<script src="js/receipts.js" defer></script>
+
+</body>
+</html>
