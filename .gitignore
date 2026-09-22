@@ -21,7 +21,7 @@ firestore-debug.log
 ui-debug.log
 
 # ── คีย์ AI (OpenRouter) — ห้าม commit เด็ดขาด ──
-js/ai-config.local.js
+app/js/ai-config.local.js
 
 # ── Service account key ของ firebase-admin (ถ้ามีสคริปต์ seed แบบ Node) ──
 *serviceAccountKey*.json
