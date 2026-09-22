@@ -5,7 +5,9 @@
 
 > ✅ เพิ่ม `https://gra-oneshot.web.app` เข้า Authorized JavaScript origins แล้ว (2026-09-22) — ปุ่ม
 > "เชื่อมต่อ Google Drive" เปิดหน้า Google Sign-in จริงได้แล้ว (ทดสอบยืนยันแล้ว ไม่ขึ้น origin error)
-> ⚠️ ยังไม่มีคีย์ OpenRouter จริงใน `app/js/ai-config.local.js` — AI (FS-02/04/08) ยังตกไปใช้ fallback
+> ✅ ใส่คีย์ OpenRouter จริงใน `app/js/ai-config.local.js` แล้ว (ไฟล์ local เท่านั้น ไม่ commit) และทดสอบ
+> เรียก AI จริงสำเร็จแล้ว (`window.analyzeReceiptWithAI` คืนผลจริงจากโมเดล ไม่ error) — FS-02/04/08 ทำงาน
+> ด้วย AI จริงบนเว็บที่ deploy แล้วตอนนี้
 
 ## นี่คือโฟลเดอร์อะไร
 

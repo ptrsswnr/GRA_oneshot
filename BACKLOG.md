@@ -12,7 +12,7 @@
 | Item | Severity | Status | Notes |
 |------|----------|--------|-------|
 | Add Google Drive OAuth origin to Google Cloud Console | MEDIUM | ✅ DONE (2026-09-22) | Added `https://gra-oneshot.web.app` to Authorized JavaScript origins — verified live: "เชื่อมต่อ Google Drive" now opens a real Google sign-in flow (no origin error). |
-| Configure OpenRouter API key | MEDIUM | PENDING | Create `app/js/ai-config.local.js` with valid OpenRouter API key for `google/gemini-2.5-flash-lite` model. Currently uses mock/fallback AI responses. |
+| Configure OpenRouter API key | MEDIUM | ✅ DONE (2026-09-22) | Real key added to `app/js/ai-config.local.js` (gitignored, deployed to live site but never committed). Verified live: `window.analyzeReceiptWithAI()` round-trips to OpenRouter successfully (no 401, model responds). |
 | Set admin isAdmin flag for testing | LOW | PENDING | Use Firebase Console to manually set `users/{uid}.isAdmin = true` for test account to enable a **positive** admin test (negative/non-admin-denied case is already fully verified — see test-results.md Test 5). |
 
 ---
