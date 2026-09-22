@@ -1,0 +1,142 @@
+rules_version = '2';
+
+// ============================================================================
+// Grant Receipt Assistant — Firestore Security Rules
+//
+// นี่คือ project เดียวกับที่ระบบเดิม (Grant Receipt Assistant) deploy อยู่จริง (ตัดสินใจใช้ project
+// เดิมแทนการสร้างใหม่ เพื่อใช้ Google Drive OAuth Client ที่ตั้งค่าไว้แล้วซ้ำ — ดู README.md) กฎชุดนี้
+// จึงเป็น**ของเดิมทุกบรรทัด บวกแค่ budgetItems ที่เพิ่มเข้ามาใหม่** (ดูหัวข้อท้ายไฟล์) ห้ามแก้ไข/ลบ
+// ส่วนที่เหลือโดยไม่จำเป็น เพราะกระทบเว็บที่ deploy จริงของระบบเดิมด้วย (คนละ Hosting site แต่ Firestore
+// เดียวกัน)
+//
+// สถานะปัจจุบัน: มี Firebase Auth (Email/Password) จริงแล้ว — บังคับสิทธิ์ตามเจ้าของ (owner-based)
+// สำหรับการ**เขียน**ทุก path ที่ผูกกับผู้ใช้คนใดคนหนึ่ง
+//
+// **การอ่าน**ข้อมูลผู้ใช้/โครงการ/ใบเสร็จ/ไฟล์แนบ อนุญาตเพิ่มสำหรับบัญชีที่มี isAdmin == true ด้วย
+// (ผ่าน isAdmin() ด้านล่าง) — สิทธิ์นี้เป็น**อ่านอย่างเดียว**เท่านั้น กฎการเขียนของ
+// users/projects/receipts/files/budgetItems ทุกจุดยังคงจำกัดเฉพาะเจ้าของเหมือนเดิมทุกประการ ไม่มีจุดใด
+// ให้ Admin เขียน/แก้ไข/ลบข้อมูลของผู้ใช้คนอื่นได้
+//
+// โครงสร้าง collection (nest ตามความเป็นเจ้าของ):
+//   users/{userId}/projects/{projectId}/receipts/{receiptId}/files/{fileId}
+//   users/{userId}/projects/{projectId}/budgetItems/{budgetItemId}   (ใหม่ — ดู grant-receipt-assistant-spec.md หัวข้อ 3)
+//   fundSources/{fundSourceId}/ruleVersions/{ruleVersionId}/ruleItems/{ruleItemId}
+//   documentTypes/{documentTypeId}, evidenceChains/{evidenceChainId}
+// รูปแบบ rule ของ receipts/files ใช้ 2 ชุดคู่กัน (ทดสอบจริงกับ Firestore แล้วจำเป็นต้องมีทั้งคู่):
+//   1) concrete path เต็มเส้นทาง (users/.../projects/.../receipts/.../files/...) สำหรับ
+//      อ่าน/เขียนไฟล์แนบจริง — nest match /files ใต้ match ที่ใช้ wildcard (`{path=**}`) แล้ว
+//      อ่าน subcollection files ไม่ได้ (permission-denied) แม้ path จะตรงตามที่ตั้งใจ จึงต้อง
+//      ประกาศแบบ concrete ทั้งเส้นเท่านั้น — ที่นี่เช็คสิทธิ์จาก path variable {userId} ได้ตรงๆ
+//   2) recursive wildcard (`{path=**}/receipts/{receiptId}`) แยกต่างหาก สำหรับ collection group
+//      query ข้ามโครงการ — เช็คจาก field ownerUserId ที่ denormalize ไว้บนเอกสาร receipt เอง แทน
+//      (หรือเป็น admin)
+//
+// fundSources/ruleVersions/ruleItems/documentTypes/evidenceChains เป็นข้อมูลอ้างอิงกลาง (ระเบียบ
+// แหล่งทุน + แบบฟอร์ม วจ.1-วจ.9) ไม่มีเจ้าของเฉพาะราย — อ่านได้ทุกบัญชีที่ล็อกอินอยู่ แต่เขียนได้เฉพาะ
+// admin (isAdmin == true) เท่านั้น
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // helper: เช็คว่าผู้เรียกล็อกอินอยู่ และมี field isAdmin == true บนเอกสาร users/{uid} ของตัวเอง
+    // (ตั้งได้เฉพาะผ่าน Firebase Console/Admin SDK เท่านั้น — ดู users/{userId} ด้านล่าง ห้าม
+    // self-promote ผ่าน client write) ใช้ .get(field, default) กันเอกสารเก่าที่ไม่มี field นี้ throw
+    function isAdmin() {
+      return request.auth != null
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('isAdmin', false) == true;
+    }
+
+    match /users/{userId} {
+      // อ่านได้ทั้งเจ้าของบัญชีเองและ admin (admin ใช้ตอนหา fullName/email เจ้าของใบเสร็จใน
+      // admin-dashboard.js) — delete/create/update ยังคงจำกัดเฉพาะเจ้าของเหมือนเดิมทุกประการ
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow delete: if request.auth != null && request.auth.uid == userId;
+
+      // create/update แยกจาก read/delete เพราะต้องกันไม่ให้เจ้าของบัญชีตั้ง isAdmin ให้ตัวเองผ่าน
+      // client SDK ได้
+      allow create: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.get('isAdmin', false) == false;
+      allow update: if request.auth != null && request.auth.uid == userId
+        && request.resource.data.get('isAdmin', false) == resource.data.get('isAdmin', false);
+
+      match /projects/{projectId} {
+        // อ่านได้ทั้งเจ้าของโครงการและ admin — เขียน (สร้าง/แก้ไข/ลบโครงการ) ยังคงจำกัดเฉพาะเจ้าของ
+        // เท่านั้น admin **แก้ไขโครงการของผู้อื่นไม่ได้**
+        allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+        allow write: if request.auth != null && request.auth.uid == userId;
+
+        // budgetItems — ใหม่ (grant-receipt-assistant-spec.md หัวข้อ 3/FS-01b) สิทธิ์เดียวกับ
+        // projects เป๊ะ (เจ้าของเขียน, เจ้าของ+admin อ่าน)
+        match /budgetItems/{budgetItemId} {
+          allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+          allow write: if request.auth != null && request.auth.uid == userId;
+        }
+
+        // ประกาศ receipts/files แบบ concrete (ไม่ใช้ wildcard) ตรงนี้ เพราะทดสอบจริงแล้วพบว่า
+        // การ nest match /files ไว้ใต้ match /{path=**}/receipts/{receiptId} (แบบ wildcard)
+        // ใช้อ่าน subcollection files ไม่ได้ (permission-denied) แม้ path จะตรงตามที่ตั้งใจ —
+        // ประกาศแบบ concrete ตรงๆ ทั้งเส้นทางแบบนี้ทำงานถูกต้อง
+        match /receipts/{receiptId} {
+          allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+          allow write: if request.auth != null && request.auth.uid == userId;
+
+          match /files/{fileId} {
+            allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+            allow write: if request.auth != null && request.auth.uid == userId;
+          }
+
+          // agentLogs — audit trail ของ AI agent (FS-04/FS-08) สิทธิ์เดียวกับ files เป๊ะ
+          match /agentLogs/{logId} {
+            allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+            allow write: if request.auth != null && request.auth.uid == userId;
+          }
+        }
+      }
+    }
+
+    // rule แยกต่างหากสำหรับ collection group query ข้ามโครงการ (db.collectionGroup("receipts"))
+    // — ต้องมี rule รูปแบบ recursive wildcard นี้เพิ่มอีกชุด ถึงจะอนุญาต query แบบข้าม path ได้
+    // เช็คจาก resource.data.ownerUserId (คู่กับ .where("ownerUserId", "==", uid) ฝั่ง client) หรือ
+    // isAdmin() (admin-dashboard.js ไม่มี where กำกับเลย เพราะต้องการอ่านของทุกคน)
+    match /{path=**}/receipts/{receiptId} {
+      allow read: if request.auth != null && (resource.data.ownerUserId == request.auth.uid || isAdmin());
+      allow write: if request.auth != null
+        && request.resource.data.ownerUserId == request.auth.uid;
+    }
+
+    // fundSources/ruleVersions/ruleItems เป็นข้อมูลอ้างอิงกลาง (ระเบียบแหล่งทุน) ไม่มีเจ้าของ
+    // เฉพาะราย — อ่านได้ทุกบัญชีที่ล็อกอินอยู่ แต่เขียนได้เฉพาะ admin (isAdmin()) เท่านั้น
+    match /fundSources/{fundSourceId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+
+      match /ruleVersions/{ruleVersionId} {
+        allow read: if request.auth != null;
+        allow write: if isAdmin();
+
+        match /ruleItems/{ruleItemId} {
+          allow read: if request.auth != null;
+          allow write: if isAdmin();
+        }
+      }
+    }
+
+    // documentTypes/evidenceChains — ข้อมูลอ้างอิงกลางเหมือน fundSources ทุกประการ (ไม่มีเจ้าของ
+    // ไม่ผูกแหล่งทุนใดแหล่งทุนหนึ่ง) — สิทธิ์เดียวกัน: อ่านได้ทุกบัญชีที่ล็อกอินอยู่ เขียนได้เฉพาะ admin
+    match /documentTypes/{documentTypeId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /evidenceChains/{evidenceChainId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // กันไม่ให้ collection อื่นที่ไม่ได้ประกาศไว้ข้างบนถูกอ่าน/เขียนโดยไม่ตั้งใจ
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

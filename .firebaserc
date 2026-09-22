@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "grant-receipt-assistant"
+  },
+  "targets": {
+    "grant-receipt-assistant": {
+      "hosting": {
+        "oneshot": [
+          "gra-oneshot"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

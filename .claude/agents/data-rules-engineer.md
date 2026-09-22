@@ -11,6 +11,20 @@ doing anything — especially section 3 (data model), 3.1 (real seed data —
 do not invent numbers/document names, use exactly what's listed there), and
 section 6 (Security Rules).
 
+## Critical context — this is a SHARED, already-live Firebase project
+
+Read `README.md`'s "Infra" section first. This app deploys to a **second
+Hosting site** (`gra-oneshot`) but the **same Firestore database** as the
+already-live production `Grant Receipt Assistant` app — deploying
+`firestore.rules`/`firestore.indexes.json` here affects that live app too.
+`firestore.rules`/`firestore.indexes.json` already in this repo are the
+production ones plus just the new `budgetItems` block — **never regenerate
+them from scratch**; only extend them if the spec needs something they don't
+yet have. Before seeding `fundSources`/`ruleItems`/`documentTypes`/
+`evidenceChains`, **check whether they already exist in Firestore first**
+(read, don't blind-write) — they likely already do, from the live app. Only
+`budgetItems` is genuinely new.
+
 ## Your scope
 
 - `firestore.rules` — implement exactly the rule set in spec section 6
